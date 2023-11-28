@@ -3,9 +3,9 @@ pipeline {
     environment {
         // Define your AWS region and ECR repository URL
         AWS_REGION = 'ap-south-1'
-        ECR_REPO_URL = '967822984907.dkr.ecr.ap-south-1.amazonaws.com'
+        ECR_REPO_URL = '748883639478.dkr.ecr.ap-south-1.amazonaws.com'
         dockerImage = "webapp01"
-        ECR_REPO = '967822984907.dkr.ecr.ap-south-1.amazonaws.com/webapp01'
+        ECR_REPO = '748883639478.dkr.ecr.ap-south-1.amazonaws.com/webapp01'
 
     }  
     stages {
@@ -93,16 +93,16 @@ pipeline {
                     //withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
 
                     
-                    //aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 967822984907.dkr.ecr.ap-south-1.amazonaws.com
+                    //aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 748883639478.dkr.ecr.ap-south-1.amazonaws.com
                     // Authenticate Docker to ECR
                     sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO_URL}"
                     
                     // Tag the Docker image for ECR
-                    //docker tag kart:latest 967822984907.dkr.ecr.ap-south-1.amazonaws.com/kart:latest
+                    //docker tag kart:latest 748883639478.dkr.ecr.ap-south-1.amazonaws.com/kart:latest
                     sh "docker tag ${dockerImage}:${dockerTag} ${ECR_REPO}:${dockerTag}"
                     
                     // Push the Docker image to ECR
-                    //docker push 967822984907.dkr.ecr.ap-south-1.amazonaws.com/kart:latest
+                    //docker push 748883639478.dkr.ecr.ap-south-1.amazonaws.com/kart:latest
                     sh "docker push ${ECR_REPO}:${dockerTag}"
                 }
             }
