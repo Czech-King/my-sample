@@ -2,10 +2,7 @@ pipeline {
     agent any
     environment {
         // Define your AWS region and ECR repository URL
-        AWS_REGION = 'ap-south-1'
-        ECR_REPO_URL = '748883639478.dkr.ecr.ap-south-1.amazonaws.com'
         dockerImage = "webapp01"
-        ECR_REPO = '748883639478.dkr.ecr.ap-south-1.amazonaws.com/webapp01'
 
     }  
     stages {
@@ -21,18 +18,15 @@ pipeline {
                 }
             }
         }
-        stage('Docker Build') {
-            steps {
-                script {
-                    // Define Docker image name and tag
-                    def dockerTag = "${env.BUILD_NUMBER}"
-                    // Build and tag the Docker image
-                    sh "docker build -t ${dockerImage}:${dockerTag} ."  
-                    // Push the Docker image to ECR
-                    //sh "docker push ${ECR_REPO_URL}:${dockerTag}"
-                }
-            }
+       stage('Build Docker Image'){
+       sh 'docker build -t ${dockerImage}'
+       }
+       stage('Docker Image Push'){
+       withCredentials([string(credentialsId: 'dockerPass', variable: 'dockerPassword')]) {
+       sh "docker login -u boyca -p ${dockerPassword}"
         }
+       sh 'docker push ${dockerImage}'
+       }
 
         stage('Remove Previous Docker Image') {
             steps {
