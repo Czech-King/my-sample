@@ -19,14 +19,12 @@ pipeline {
             }
         }
        stage('Build Docker Image'){
+          steps {
+              script {  
        sh 'docker build -t ${dockerImage}'
-       }
-       stage('Docker Image Push'){
-       withCredentials([string(credentialsId: 'dockerPass', variable: 'dockerPassword')]) {
-       sh "docker login -u boyca -p ${dockerPassword}"
-        }
-       sh 'docker push ${dockerImage}'
-       }
+}
+}
+}
 
         stage('Remove Previous Docker Image') {
             steps {
