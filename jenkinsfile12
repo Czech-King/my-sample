@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
         // Define your AWS region and ECR repository URL
-        dockerImage = "webapp01"
+        dockerImage = "myweb"
 
     }  
     stages {
