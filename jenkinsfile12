@@ -21,45 +21,6 @@ pipeline {
                 }
             }
         }
-        stage('SonarQube Analysis') {
-            steps {
-                script {
-                    def mvnHome = tool name: 'maven', type: 'maven'
-                    
-                    // Print Maven version for debugging
-                    sh "${mvnHome}/bin/mvn -version"
-
-                    // Print SonarQube Scanner version for debugging
-                    sh "${tool 'sonar'}/bin/sonar-scanner --version"
-
-                    // Run SonarQube analysis
-                    withSonarQubeEnv('SonarQubeServer') {
-                        sh "${mvnHome}/bin/mvn sonar:sonar"
-                    }
-                    }
-                }
-            }
-        stage('Quality Gate Check') {
-            steps {
-                sleep (60)
-                timeout(time: 1, unit: 'HOURS') {
-                    // Wait for the Quality Gate to be computed and check its status
-               }
-            }
-        
-        post {
- 
-        failure {
-            echo 'sending email notification from jenkins'
-    
-                step([$class: 'Mailer',notifyEveryUnstableBuild: true,
-                recipients: emailextrecipients([[$class: 'CulpritsRecipientProvider'],
-                [$class: 'RequesterRecipientProvider']])])
-
-                }
-            }
-    
-        }
         stage('Docker Build') {
             steps {
                 script {
@@ -83,41 +44,4 @@ pipeline {
                 }
             }
         }
-        stage('ECR Image Push') {
-            steps {
-                script {
-                    def dockerTag = "${env.BUILD_NUMBER}"
-                    // Define Docker image name and tag
-                    //def buildImage = "${dockerImage}:${dockerTag}"
-                                    // Authenticate Docker to ECR using AWS access key and secret key
-                    //withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
-
-                    
-                    //aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 748883639478.dkr.ecr.ap-south-1.amazonaws.com
-                    // Authenticate Docker to ECR
-                    sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REPO_URL}"
-                    
-                    // Tag the Docker image for ECR
-                    //docker tag kart:latest 748883639478.dkr.ecr.ap-south-1.amazonaws.com/kart:latest
-                    sh "docker tag ${dockerImage}:${dockerTag} ${ECR_REPO}:${dockerTag}"
-                    
-                    // Push the Docker image to ECR
-                    //docker push 748883639478.dkr.ecr.ap-south-1.amazonaws.com/kart:latest
-                    sh "docker push ${ECR_REPO}:${dockerTag}"
-                }
-            }
         }
-    
-        stage('Update Kubernetes Deployment') {
-            steps {
-                // Update Kubernetes deployment manifest with dynamic image tag
-                script {
-                    def dockerTag = "${env.BUILD_NUMBER}"
-                    sh "sed -i 's|image: my-docker-image:latest|image: ${ECR_REPO}:${dockerTag}|' main.yml"
-                    sh "kubectl apply -f main.yml"
-                }
-            }
-        }
-    }
-
-}
